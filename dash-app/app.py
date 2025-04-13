@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.express as px
 
 # Load updated fake SCADA data
-df = pd.read_csv('data/fake_scada_data_updated.csv')
+df = pd.read_csv('data/fake_scada_data.csv')
 df['timestamp'] = pd.to_datetime(df['timestamp'])
 
 # Get unique site names
