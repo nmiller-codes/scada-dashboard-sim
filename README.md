@@ -77,7 +77,7 @@ This repo aims to recreate that environment as a portfolio-grade simulation.
 
 ## 📬 Contact
 
-Maintained by [Your Name or GitHub Handle].  
+Maintained by Nathan Miller (nmiller-codes).  
 Feel free to fork, open issues, or suggest enhancements.
 
 ---
