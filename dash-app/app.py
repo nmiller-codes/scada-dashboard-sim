@@ -1,83 +1,55 @@
 import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
-import plotly.graph_objs as go
+from dash import html, dcc, Input, Output
+import dash_bootstrap_components as dbc
 import pandas as pd
-import numpy as np
-import datetime
+import plotly.express as px
 
-app = dash.Dash(__name__)
-server = app.server
+# Load updated fake SCADA data
+df = pd.read_csv('data/fake_scada_data_updated.csv')
+df['timestamp'] = pd.to_datetime(df['timestamp'])
 
-# Constants
-WIND_FARMS = ["Genesis", "Foster", "Whirl"]
-TURBINES_PER_FARM = 28
-REFRESH_INTERVAL = 30 * 1000  # 30 seconds in milliseconds
+# Get unique site names
+site_names = df['site'].unique()
 
-# Generate fake initial data
-def generate_fake_data():
-    now = datetime.datetime.now()
-    timestamps = [now - datetime.timedelta(minutes=i) for i in range(60)][::-1]
-    data = {
-        "timestamp": timestamps,
-        "wind_speed": np.random.uniform(2.5, 15, size=60),
-        "power_output": np.random.uniform(0, 2.5, size=60),
-    }
-    return pd.DataFrame(data)
+# Start Dash app
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-data = {
-    farm: generate_fake_data() for farm in WIND_FARMS
-}
-
-app.layout = html.Div([
-    html.H1("SCADA Dashboard Simulation", style={"textAlign": "center"}),
-
+app.layout = dbc.Container([
+    html.H1("SCADA Dashboard Simulation", className="my-3"),
+    
     dcc.Dropdown(
-        id='site-dropdown',
-        options=[{"label": farm, "value": farm} for farm in WIND_FARMS],
-        value="Genesis",
-        style={"width": "300px", "margin": "auto"}
+        id="site-dropdown",
+        options=[{"label": site, "value": site} for site in site_names],
+        value=site_names[0],
+        clearable=False,
+        className="mb-4"
     ),
-
-    dcc.Graph(id='wind-speed-graph'),
-    dcc.Graph(id='power-output-graph'),
-
+    
+    dcc.Graph(id="power-graph"),
+    dcc.Graph(id="wind-graph"),
     dcc.Interval(
-        id='interval-component',
-        interval=REFRESH_INTERVAL,
+        id="interval-component",
+        interval=30*1000,  # 30 seconds
         n_intervals=0
     )
 ])
 
 @app.callback(
-    [Output('wind-speed-graph', 'figure'),
-     Output('power-output-graph', 'figure')],
-    [Input('site-dropdown', 'value'),
-     Input('interval-component', 'n_intervals')]
+    [Output("power-graph", "figure"),
+     Output("wind-graph", "figure")],
+    [Input("site-dropdown", "value"),
+     Input("interval-component", "n_intervals")]
 )
-def update_graphs(site, n):
-    df = data[site]
+def update_graphs(selected_site, n_intervals):
+    filtered = df[df["site"] == selected_site].sort_values("timestamp")
+    
+    fig1 = px.line(filtered, x="timestamp", y="active_power_kw", title=f"{selected_site} - Active Power (kW)")
+    fig1.update_layout(margin=dict(l=20, r=20, t=50, b=20))
+    
+    fig2 = px.line(filtered, x="timestamp", y="wind_speed_mps", title=f"{selected_site} - Wind Speed (m/s)")
+    fig2.update_layout(margin=dict(l=20, r=20, t=50, b=20))
+    
+    return fig1, fig2
 
-    # Simulate appending new data every refresh
-    new_row = pd.DataFrame({
-        "timestamp": [datetime.datetime.now()],
-        "wind_speed": [np.random.uniform(2.5, 15)],
-        "power_output": [np.random.uniform(0, 2.5)]
-    })
-    df = pd.concat([df.iloc[1:], new_row])
-    data[site] = df
-
-    wind_fig = go.Figure([
-        go.Scatter(x=df['timestamp'], y=df['wind_speed'], mode='lines', name='Wind Speed')
-    ])
-    wind_fig.update_layout(title=f"{site} - Wind Speed", yaxis_title="m/s")
-
-    power_fig = go.Figure([
-        go.Scatter(x=df['timestamp'], y=df['power_output'], mode='lines', name='Power Output')
-    ])
-    power_fig.update_layout(title=f"{site} - Power Output", yaxis_title="MW")
-
-    return wind_fig, power_fig
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run_server(debug=True)
