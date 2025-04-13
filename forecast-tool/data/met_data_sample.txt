@@ -1,0 +1,2 @@
+"placehlder for met_data_sample.csv"
+"Will also add turbine_specs.json to this directory"
