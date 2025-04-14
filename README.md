@@ -16,7 +16,7 @@ scada-dashboard-sim/
 │   ├── README_template.md
 │   └── screenshots/
 │       ├── fleet-overview/
-│       │   ├── ROCC-02.15.2019.jpg
+│       │   ├── fleet_overview.jpg
 │       │   └── dashboard_reference.jpg
 │       ├── site-level/
 │       │   └── BLC-OLD_Site-Level-Dashboard-02.12.2018.jpg
@@ -50,7 +50,7 @@ These replace real wind farm identifiers to preserve anonymity while retaining s
 ## 🖼️ Screenshots
 
 ### Fleet-Level Dashboard  
-![ROCC Dashboard](docs/screenshots/fleet-overview/dashboard_reference.jpg)
+![ROCC Dashboard](docs/screenshots/fleet-overview/fleet_overview.jpg)
 
 ### Site-Level View  
 ![Site Dashboard](docs/screenshots/site-level/BLC-OLD_Site-Level-Dashboard-02.12.2018.jpg)
